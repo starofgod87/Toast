@@ -34,7 +34,7 @@ static const CGSize  CSToastShadowOffset        = { 4.0, 4.0 };
 static const BOOL    CSToastDisplayShadow       = YES;
 
 // display duration
-static const NSTimeInterval CSToastDefaultDuration  = 3.0;
+static const NSTimeInterval CSToastDefaultDuration  = 2.0;
 
 // image view size
 static const CGFloat CSToastImageViewWidth      = 80.0;
@@ -75,31 +75,35 @@ NSString * const CSToastPositionBottom          = @"bottom";
 #pragma mark - Toast Methods
 
 - (void)makeToast:(NSString *)message {
-    [self makeToast:message duration:CSToastDefaultDuration position:nil];
+    if ([message isKindOfClass:[NSNull class]] || !message || message.length == 0) {
+        return;
+    }
+    
+    [self makeToast:message duration:CSToastDefaultDuration position:CSToastPositionCenter];
 }
 
 - (void)makeToast:(NSString *)message duration:(NSTimeInterval)duration position:(id)position {
     UIView *toast = [self viewForMessage:message title:nil image:nil];
-    [self showToast:toast duration:duration position:position];  
+    [self showToast:toast duration:duration position:position];
 }
 
 - (void)makeToast:(NSString *)message duration:(NSTimeInterval)duration position:(id)position title:(NSString *)title {
     UIView *toast = [self viewForMessage:message title:title image:nil];
-    [self showToast:toast duration:duration position:position];  
+    [self showToast:toast duration:duration position:position];
 }
 
 - (void)makeToast:(NSString *)message duration:(NSTimeInterval)duration position:(id)position image:(UIImage *)image {
     UIView *toast = [self viewForMessage:message title:nil image:image];
-    [self showToast:toast duration:duration position:position];  
+    [self showToast:toast duration:duration position:position];
 }
 
 - (void)makeToast:(NSString *)message duration:(NSTimeInterval)duration  position:(id)position title:(NSString *)title image:(UIImage *)image {
     UIView *toast = [self viewForMessage:message title:title image:image];
-    [self showToast:toast duration:duration position:position];  
+    [self showToast:toast duration:duration position:position];
 }
 
 - (void)showToast:(UIView *)toast {
-    [self showToast:toast duration:CSToastDefaultDuration position:nil];
+    [self showToast:toast duration:CSToastDefaultDuration position:CSToastPositionCenter];
 }
 
 
@@ -249,7 +253,7 @@ NSString * const CSToastPositionBottom          = @"bottom";
         CGRect boundingRect = [string boundingRectWithSize:constrainedSize options:NSStringDrawingUsesLineFragmentOrigin attributes:attributes context:nil];
         return CGSizeMake(ceilf(boundingRect.size.width), ceilf(boundingRect.size.height));
     }
-
+    
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return [string sizeWithFont:font constrainedToSize:constrainedSize lineBreakMode:lineBreakMode];
@@ -259,7 +263,7 @@ NSString * const CSToastPositionBottom          = @"bottom";
 - (UIView *)viewForMessage:(NSString *)message title:(NSString *)title image:(UIImage *)image {
     // sanity
     if((message == nil) && (title == nil) && (image == nil)) return nil;
-
+    
     // dynamically build a toast view with any combination of message, title, & image.
     UILabel *messageLabel = nil;
     UILabel *titleLabel = nil;
@@ -271,13 +275,13 @@ NSString * const CSToastPositionBottom          = @"bottom";
     wrapperView.layer.cornerRadius = CSToastCornerRadius;
     
     if (CSToastDisplayShadow) {
-        wrapperView.layer.shadowColor = [UIColor blackColor].CGColor;
+        wrapperView.layer.shadowColor = [UIColor darkGrayColor].CGColor;
         wrapperView.layer.shadowOpacity = CSToastShadowOpacity;
         wrapperView.layer.shadowRadius = CSToastShadowRadius;
         wrapperView.layer.shadowOffset = CSToastShadowOffset;
     }
-
-    wrapperView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:CSToastOpacity];
+    
+    wrapperView.backgroundColor = [[UIColor darkGrayColor] colorWithAlphaComponent:CSToastOpacity];
     
     if(image != nil) {
         imageView = [[UIImageView alloc] initWithImage:image];
@@ -343,7 +347,7 @@ NSString * const CSToastPositionBottom          = @"bottom";
     
     // messageLabel frame values
     CGFloat messageWidth, messageHeight, messageLeft, messageTop;
-
+    
     if(messageLabel != nil) {
         messageWidth = messageLabel.bounds.size.width;
         messageHeight = messageLabel.bounds.size.height;
@@ -352,14 +356,14 @@ NSString * const CSToastPositionBottom          = @"bottom";
     } else {
         messageWidth = messageHeight = messageLeft = messageTop = 0.0;
     }
-
+    
     CGFloat longerWidth = MAX(titleWidth, messageWidth);
     CGFloat longerLeft = MAX(titleLeft, messageLeft);
     
     // wrapper width uses the longerWidth or the image width, whatever is larger. same logic applies to the wrapper height
-    CGFloat wrapperWidth = MAX((imageWidth + (CSToastHorizontalPadding * 2)), (longerLeft + longerWidth + CSToastHorizontalPadding));    
+    CGFloat wrapperWidth = MAX((imageWidth + (CSToastHorizontalPadding * 2)), (longerLeft + longerWidth + CSToastHorizontalPadding));
     CGFloat wrapperHeight = MAX((messageTop + messageHeight + CSToastVerticalPadding), (imageHeight + (CSToastVerticalPadding * 2)));
-                         
+    
     wrapperView.frame = CGRectMake(0.0, 0.0, wrapperWidth, wrapperHeight);
     
     if(titleLabel != nil) {
@@ -375,7 +379,7 @@ NSString * const CSToastPositionBottom          = @"bottom";
     if(imageView != nil) {
         [wrapperView addSubview:imageView];
     }
-        
+    
     return wrapperView;
 }
 
